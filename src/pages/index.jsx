@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect, useContext } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
 import { AnimatePresence, motion } from "framer-motion";
-import f from "../../public/bg/1.gif";
+import f from "../../public/bg/5.gif";
+import noise from "../../public/noise.gif";
 import Image from "next/image";
 import TextareaAutosize from "react-textarea-autosize";
 import { io } from "socket.io-client";
@@ -86,7 +87,7 @@ const Home = () => {
 
   useEffect(() => {
     scrollToLastMessage();
-  }, [messages, messagesRef]);
+  }, [messages, messagesRef, scrollToLastMessage]);
 
   function enterFullscreen() {
     setState((old) => {
@@ -207,8 +208,10 @@ const Home = () => {
       </AnimatePresence>
 
       <div className="flex w-full h-full bg-black">
-        <Image src={f} fill alt="" className="opacity-30" />
-        <main className="w-[70%] h-full z-10">{/* main content */}</main>
+        <main className="w-[70%] h-full z-10">
+          <Image fill src={noise} className="opacity-[3%]" />
+          <Image fill src={f} alt="" className="opacity-30" />
+        </main>
         <div className="flex flex-col justify-between w-[30%] h-full backdrop-blur-xl bg-black/80 rounded-l-xl z-10 text-white px-6 py-5">
           {/* Chat header */}
           <div className="flex items-center justify-between w-full">
@@ -253,12 +256,14 @@ const Home = () => {
               return (
                 <div
                   key={m.time}
-                  className="flex w-full px-2 py-1 duration-200 rounded-sm hover:bg-gray-800"
+                  className="flex w-full px-2 py-1 duration-100 rounded-sm hover:bg-gray-800"
                 >
                   <pre>
                     <button
                       className="font-black hover:underline"
-                      color={m.usercolor}
+                      style={{
+                        color: m.usercolor,
+                      }}
                     >
                       {m.user}
                     </button>

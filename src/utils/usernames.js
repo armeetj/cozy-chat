@@ -158,7 +158,7 @@ export const randomUsername = () => {
 };
 
 export const randomColor = () => {
-  return `hsl(${Math.floor(Math.random() * 360)} 100% 70%)`;
+  return `hsl(${Math.floor(Math.random() * 360)}, 100%, 70%)`;
 };
 
 const randomAdjective = () => adjs[Math.floor(Math.random() * adjs.length)];
