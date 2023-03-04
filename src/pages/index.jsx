@@ -7,7 +7,7 @@ import Image from "next/image";
 import TextareaAutosize from "react-textarea-autosize";
 import { io } from "socket.io-client";
 import { SocketContext } from "../context/SocketContext";
-import { randomColor, randomUsername } from "../utils/usernames";
+import { randomColor, randomUsername } from "../../server/utils/usernames";
 
 const Home = () => {
   const socket = useContext(SocketContext);
@@ -15,23 +15,15 @@ const Home = () => {
   const chatInput = useRef(undefined);
   const messagesRef = useRef(undefined);
   const [showChat, setShowChat] = useState(true);
-  const [participants, setParticipants] = useState(null);
   const [state, setState] = useState({
     joined: false,
-    username: null,
-    usercolor: null,
     paused: true,
     fullscreen: false,
     autoscroll: true,
   });
+  const [userId, setUserId] = useState();
+  const [users, setUsers] = useState();
   const [messages, setMessages] = useState([]);
-
-  function scrollToLastMessage() {
-    if (state.autoscroll) {
-      if (messagesRef.current)
-        messagesRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }
 
   useEffect(() => {
     const keyHandler = (e) => {
@@ -44,6 +36,31 @@ const Home = () => {
       window.removeEventListener("keydown", keyHandler);
     };
   }, [state.joined]);
+
+  useEffect(() => {
+    if (state.joined) {
+      socket.emit("c-join");
+      socket.on("s-user-join", (id) => {
+        setUserId(id);
+      });
+
+      socket.on("s-users-update", (data) => {
+        setUsers(data);
+      });
+
+      socket.on("s-message-broadcast", (data) => {
+        setMessages((old) => {
+          let newMessages = [...old, data];
+          // newMessages.sort((a, b) => {
+          //   if (a.time < b.time) return -1;
+          //   else if (a.time == b.time) return 0;
+          //   else return 1;
+          // });
+          return newMessages;
+        });
+      });
+    }
+  }, [socket, state.joined]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -64,30 +81,15 @@ const Home = () => {
   }, [chatInput, sendMessage]);
 
   useEffect(() => {
-    if (state.joined) {
-      socket.on("join-broadcast", (numParticipants) => {
-        setParticipants(numParticipants);
-      });
-
-      socket.on("message-broadcast", (data) => {
-        setMessages((old) => {
-          let newMessages = [...old, data];
-          // newMessages.sort((a, b) => {
-          //   if (a.time < b.time) return -1;
-          //   else if (a.time == b.time) return 0;
-          //   else return 1;
-          // });
-          return newMessages;
-        });
-      });
-
-      socket.emit("join");
-    }
-  }, [socket, state.joined]);
-
-  useEffect(() => {
     scrollToLastMessage();
   }, [messages, messagesRef, scrollToLastMessage]);
+
+  function scrollToLastMessage() {
+    if (state.autoscroll) {
+      if (messagesRef.current)
+        messagesRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }
 
   function enterFullscreen() {
     setState((old) => {
@@ -128,15 +130,7 @@ const Home = () => {
 
   function join() {
     embedRef.current?.internalPlayer.unMute();
-    setState((old) => {
-      return {
-        ...old,
-        username: randomUsername(),
-        usercolor: randomColor(),
-        joined: true,
-        paused: false,
-      };
-    });
+    socket.emit("c-join");
   }
 
   return (
@@ -279,7 +273,7 @@ const Home = () => {
               maxRows={4}
               className="w-full h-full px-2 py-2 duration-200 bg-transparent border-2 rounded-md outline-none resize-none border-white/40 hover:border-orange-500 focus:border-orange-500"
               onSubmit={sendMessage}
-              placeholder="Send a message!"
+              placeholder={"Send a message ..."}
               ref={chatInput}
             />
             <button

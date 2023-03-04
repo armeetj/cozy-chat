@@ -153,11 +153,11 @@ const adjs = [
   "unfriendly",
 ];
 
-export const randomUsername = () => {
+const randomUsername = () => {
   return `${randomAdjective()}-${randomNoun()}`;
 };
 
-export const randomColor = () => {
+const randomColor = () => {
   return `hsl(${Math.floor(Math.random() * 360)}, 100%, 70%)`;
 };
 
@@ -167,3 +167,10 @@ const randomNoun = () => nouns[Math.floor(Math.random() * nouns.length)];
 const uppercase = (s) => {
   return s[0].toUpperCase() + s.substring(1);
 };
+
+module.exports = {
+  randomUsername,
+  randomAdjective,
+  randomNoun,
+  uppercase
+}

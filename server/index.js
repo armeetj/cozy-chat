@@ -3,7 +3,12 @@ const { Server } = require("socket.io");
 const http = require("http");
 const cors = require("cors");
 const helmet = require("helmet");
-const { incrementConnectedClients, getConnectedClients, decrementConnectedClients } = require("./funcs");
+const {
+  getConnectedCount,
+  createUser,
+  getUsers,
+  removeUser,
+} = require("./funcs");
 
 const app = express();
 const server = http.createServer(app);
@@ -13,21 +18,23 @@ const port = 4000;
 app.use(helmet());
 app.use(cors());
 
-let connectedClients = 0;
-
 io.on("connection", (socket) => {
-  socket.on("join", async () => {
-    await incrementConnectedClients();
-    io.emit("join-broadcast", await getConnectedClients());
+  socket.on("c-user-join", async () => {
+    const user = await createUser(socket.id);
+    socket.emit("s-user-join", user.id);
+    io.emit("s-users-update", await getUsers());
   });
 
-  socket.on("message", (data) => {
-    io.emit("message-broadcast", data); 
+  socket.on("c-user-leave", async () => {
+    const user = await removeUser(socket.id);
+    io.emit("s-users-update", await getUsers());
   });
 
-  socket.on("disconnect", async () => {
-    await decrementConnectedClients();
-    io.emit("join-broadcast", await getConnectedClients());
+  socket.on("c-message", (message) => {
+    io.emit("s-message-broadcast", {
+      id: socket.id,
+      message: message,
+    });
   });
 });
 
