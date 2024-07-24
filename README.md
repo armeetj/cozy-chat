@@ -1,6 +1,6 @@
 # `cozy`
 
-A **cozy** _zen_ study space for Caltech students.
+A **cozy** _zen_ study space for Caltech students.<br/>
 Heavily inspired by [lofi.cafe](https://www.lofi.cafe/) with additional features.
 
 ### Demo
